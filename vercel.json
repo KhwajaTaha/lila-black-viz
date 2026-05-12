@@ -1,3 +1,5 @@
 {
-  "framework": "nextjs"
+  "buildCommand": "next build",
+  "outputDirectory": "out",
+  "framework": null
 }
