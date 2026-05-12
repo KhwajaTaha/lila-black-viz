@@ -36,8 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
-# generated data (run scripts/preprocess.py locally to regenerate)
-/public/data/
+# generated data — committed so Vercel can serve it
+# to regenerate: python3 scripts/preprocess.py --data /path/to/player_data --out public/data
+# /public/data/
 
 # python
 __pycache__/

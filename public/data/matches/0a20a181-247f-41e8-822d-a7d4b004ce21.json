@@ -1,0 +1,1 @@
+{"match_id":"0a20a181-247f-41e8-822d-a7d4b004ce21","map_id":"Lockdown","duration_ms":40000,"players":[{"uid":"b3340cc5-c9fa-4108-b56d-0728bc978a22","human":true,"hue":124,"events":[{"t":0,"px":273,"py":317,"e":"Position"},{"t":35000,"px":271,"py":319,"e":"Position"},{"t":40000,"px":271,"py":319,"e":"BotKilled"}]}]}
