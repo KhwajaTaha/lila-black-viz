@@ -6,12 +6,12 @@ A high-performance, web-based analytics dashboard for visualizing battle-royale 
 
 ## Features
 
-- 🗺️ **Interactive Map Canvas** — Player trails rendered on real minimap images (AmbroseValley, GrandRift, Lockdown)
-- ▶️ **Animated Playback** — Scrub through matches at 0.5×–20× speed with a smooth 60fps canvas loop
-- 🔥 **Density Heatmaps** — Kill, death, loot, and traffic hotspots across all 797 matches
-- 🎯 **Player Legend** — Filter by human/bot, highlight individual players
+- **Interactive Map Canvas** — Player trails rendered on real minimap images (AmbroseValley, GrandRift, Lockdown)
+-  **Animated Playback** — Scrub through matches at 0.5×–20× speed with a smooth 60fps canvas loop
+- **Density Heatmaps** — Kill, death, loot, and traffic hotspots across all 797 matches
+- **Player Legend** — Filter by human/bot, highlight individual players
 - ⚡ **Virtualised Sidebar** — 797 matches rendered instantly via virtual scroll (only ~15 DOM nodes at a time)
-- 📊 **Match Filtering** — Filter by map, date, and "has kills" toggle
+- **Match Filtering** — Filter by map, date, and "has kills" toggle
 
 ## Tech Stack
 
@@ -120,18 +120,3 @@ The animation system is designed to never trigger React re-renders during playba
 - **Batched trail strokes** — 4 opacity buckets per player instead of 40 individual `ctx.stroke()` calls
 - **Canvas event marks** — timeline ticks drawn on an offscreen canvas once per match
 
-## Deployment
-
-The app is configured for static export and deploys to any static host:
-
-```bash
-# Vercel (recommended)
-npx vercel --prod
-
-# Or any static host — serve the /out directory
-npm run build
-```
-
-## License
-
-MIT
