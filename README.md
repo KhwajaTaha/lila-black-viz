@@ -10,7 +10,7 @@ A high-performance, web-based analytics dashboard for visualizing battle-royale 
 -  **Animated Playback** — Scrub through matches at 0.5×–20× speed with a smooth 60fps canvas loop
 - **Density Heatmaps** — Kill, death, loot, and traffic hotspots across all 797 matches
 - **Player Legend** — Filter by human/bot, highlight individual players
-- ⚡ **Virtualised Sidebar** — 797 matches rendered instantly via virtual scroll (only ~15 DOM nodes at a time)
+- **Virtualised Sidebar** — 797 matches rendered instantly via virtual scroll (only ~15 DOM nodes at a time)
 - **Match Filtering** — Filter by map, date, and "has kills" toggle
 
 ## Tech Stack
