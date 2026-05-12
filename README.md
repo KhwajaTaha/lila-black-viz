@@ -120,3 +120,6 @@ The animation system is designed to never trigger React re-renders during playba
 - **Batched trail strokes** — 4 opacity buckets per player instead of 40 individual `ctx.stroke()` calls
 - **Canvas event marks** — timeline ticks drawn on an offscreen canvas once per match
 
+## Deployment Url
+
+https://lila-black-viz-phi.vercel.app
