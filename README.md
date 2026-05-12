@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LILA BLACK — Player Journey Visualization
+
+A high-performance, web-based analytics dashboard for visualizing battle-royale gameplay data. Built with **Next.js 16**, **HTML5 Canvas**, and **Tailwind CSS**.
+
+![LILA BLACK Dashboard](public/minimaps/AmbroseValley_Minimap.png)
+
+## Features
+
+- 🗺️ **Interactive Map Canvas** — Player trails rendered on real minimap images (AmbroseValley, GrandRift, Lockdown)
+- ▶️ **Animated Playback** — Scrub through matches at 0.5×–20× speed with a smooth 60fps canvas loop
+- 🔥 **Density Heatmaps** — Kill, death, loot, and traffic hotspots across all 797 matches
+- 🎯 **Player Legend** — Filter by human/bot, highlight individual players
+- ⚡ **Virtualised Sidebar** — 797 matches rendered instantly via virtual scroll (only ~15 DOM nodes at a time)
+- 📊 **Match Filtering** — Filter by map, date, and "has kills" toggle
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, static export) |
+| Rendering | HTML5 Canvas 2D (no WebGL) |
+| Styling | Tailwind CSS v3 |
+| Language | TypeScript |
+| Data Pipeline | Python 3 + PyArrow + Pandas |
+
+## Project Structure
+
+```
+lila-black-viz/
+├── scripts/
+│   └── preprocess.py       # Converts .nakama-0 Parquet files → JSON
+├── public/
+│   ├── minimaps/           # Map background images (committed)
+│   └── data/               # Generated JSON — NOT committed (see below)
+│       ├── match_index.json
+│       ├── matches/        # One JSON per match
+│       └── heatmaps/       # One JSON per map
+└── src/
+    ├── app/page.tsx         # Main page + animation loop
+    ├── components/
+    │   ├── MapCanvas.tsx    # Canvas renderer (journey + heatmap)
+    │   ├── MatchSidebar.tsx # Virtualised match list
+    │   ├── EventTimeline.tsx# Playback scrubber
+    │   └── PlayerLegend.tsx # Player colour legend
+    ├── hooks/useMatchData.ts# Data fetching hooks
+    └── lib/
+        ├── types.ts         # TypeScript interfaces
+        └── colorHash.ts     # Deterministic HSL colours per player
+```
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+
+- Node.js 22+
+- Python 3.10+ with `pyarrow` and `pandas`
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pip install pyarrow pandas
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Generate the data
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Point the preprocessor at your raw Parquet data folder:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+python3 scripts/preprocess.py --data /path/to/player_data --out public/data
+```
 
-## Learn More
+This reads all `.nakama-0` Parquet files and outputs:
+- `public/data/match_index.json` — index of all matches
+- `public/data/matches/{id}.json` — per-match player events
+- `public/data/heatmaps/{MapId}.json` — aggregated heatmap points
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Run the dev server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+# → http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 4. Build for production
 
-## Deploy on Vercel
+```bash
+npm run build   # outputs to /out (static export)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Data Format
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The preprocessor expects a folder structured as:
+
+```
+player_data/
+├── February_10/
+│   ├── {user_id}_{match_id}.nakama-0   # human players
+│   └── {bot_id}_{match_id}.nakama-0    # bots
+├── February_11/
+...
+```
+
+Each Parquet file has columns: `ts` (unix timestamp in seconds), `x`, `z` (world coordinates), `event` (string), `user_id`, `match_id`, `map_id`.
+
+### Supported Maps
+
+| Map ID | Scale | Origin (x, z) |
+|---|---|---|
+| AmbroseValley | 900 | −370, −473 |
+| GrandRift | 581 | −290, −290 |
+| Lockdown | 1000 | −500, −500 |
+
+## Performance Notes
+
+The animation system is designed to never trigger React re-renders during playback:
+
+- **Canvas drives itself** — `requestAnimationFrame` loop updates a `ref`, canvas redraws directly
+- **React state** updates at ~15fps (for the timeline UI only), not 60fps
+- **Virtualised sidebar** — renders only the ~15 visible match cards regardless of total count
+- **Binary search** — O(log n) event lookup per player per frame instead of O(n) filter
+- **Batched trail strokes** — 4 opacity buckets per player instead of 40 individual `ctx.stroke()` calls
+- **Canvas event marks** — timeline ticks drawn on an offscreen canvas once per match
+
+## Deployment
+
+The app is configured for static export and deploys to any static host:
+
+```bash
+# Vercel (recommended)
+npx vercel --prod
+
+# Or any static host — serve the /out directory
+npm run build
+```
+
+## License
+
+MIT

@@ -92,7 +92,6 @@ def load_all_files(data_root: Path) -> pd.DataFrame:
     df['match_id_clean'] = df['match_id'].str.replace(r'\.nakama-0$', '', regex=True)
     return df
 
-# ── Build match index ──────────────────────────────────────────────────────────
 def build_match_index(df: pd.DataFrame) -> list[dict]:
     matches = []
     for (match_id_clean, _day), group in df.groupby(['match_id_clean', '_day']):
@@ -102,7 +101,7 @@ def build_match_index(df: pd.DataFrame) -> list[dict]:
 
         # Duration: max ts - min ts in ms
         ts_vals = group['ts'].astype('int64')
-        duration_ms = int((ts_vals.max() - ts_vals.min()) / 1_000_000)  # ns → ms
+        duration_ms = int((ts_vals.max() - ts_vals.min()) * 1000)  # ts unit=s stored as ms; *1000 → real ms
 
         combat_events = {'Kill', 'Killed', 'BotKill', 'BotKilled', 'KilledByStorm'}
         kill_count = int(group[group['event'].isin({'Kill', 'BotKill'})].shape[0])
@@ -138,7 +137,7 @@ def build_match_file(match_id_clean: str, group: pd.DataFrame) -> dict:
         hue = color_hue(str(uid)) if human else -1
 
         player_group = player_group.copy()
-        player_group['t_rel'] = ((player_group['ts'].astype('int64') - min_ts) / 1_000_000).astype(int)
+        player_group['t_rel'] = ((player_group['ts'].astype('int64') - min_ts) * 1000).astype(int)  # s→ms
         player_group = player_group.sort_values('t_rel')
 
         events = []
@@ -158,7 +157,7 @@ def build_match_file(match_id_clean: str, group: pd.DataFrame) -> dict:
             "events":   events,
         })
 
-    duration_ms = int((ts_ns.max() - min_ts) / 1_000_000)
+    duration_ms = int((ts_ns.max() - min_ts) * 1000)  # s→ms
 
     return {
         "match_id":    match_id_clean,
@@ -205,7 +204,6 @@ def build_heatmaps(df: pd.DataFrame) -> dict[str, dict]:
 
     return heatmaps
 
-# ── Main ───────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="LILA BLACK data preprocessor")
     parser.add_argument(
@@ -227,18 +225,17 @@ def main():
     print(f"   Data: {data_root}")
     print(f"   Out:  {out_dir}\n")
 
-    # Output dirs
+    
     (out_dir / 'matches').mkdir(parents=True, exist_ok=True)
     (out_dir / 'heatmaps').mkdir(parents=True, exist_ok=True)
 
-    # ── 1. Load all data ───────────────────────────────────────────────────────
+   
     print("📦 Loading parquet files...")
     df = load_all_files(data_root)
     print(f"   Total rows: {len(df):,}")
     print(f"   Unique matches: {df['match_id_clean'].nunique()}")
     print(f"   Unique users: {df['user_id'].nunique()}\n")
 
-    # ── 2. Match index ─────────────────────────────────────────────────────────
     print("📋 Building match index...")
     match_index = build_match_index(df)
     idx_path = out_dir / 'match_index.json'
@@ -246,7 +243,7 @@ def main():
         json.dump(match_index, f, separators=(',', ':'))
     print(f"   ✅ {len(match_index)} matches → {idx_path}")
 
-    # ── 3. Per-match files ─────────────────────────────────────────────────────
+   
     print("\n📁 Building per-match files...")
     matches_dir = out_dir / 'matches'
     count = 0
@@ -262,7 +259,7 @@ def main():
 
     print(f"   ✅ {count} match files written")
 
-    # ── 4. Heatmaps ────────────────────────────────────────────────────────────
+
     print("\n🔥 Building heatmaps...")
     heatmaps = build_heatmaps(df)
     for map_id, data in heatmaps.items():

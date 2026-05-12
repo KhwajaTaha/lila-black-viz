@@ -36,6 +36,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# generated data (run scripts/preprocess.py locally to regenerate)
+/public/data/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
